@@ -10,7 +10,7 @@ const conf = dotenv.config().parsed;
 const app = express();
 const port = conf.SERVER_PORT || 4000;
 
-
+const basePath = conf.BASE_PATH || ''
 
 // ejs 模板引擎
 app.set("view engine", "ejs");
@@ -35,12 +35,12 @@ const client = new OcrClient({
 });
 
 // 首页
-app.get("/", (req, res) => {
-  res.render("index", { result: null });
+app.get(basePath ? basePath : basePath + "/", (req, res) => {
+  res.render("index", { result: null, basePath });
 });
 
 // 上传处理
-app.post("/upload", upload.single("image"), async (req, res) => {
+app.post(basePath + "/upload", upload.single("image"), async (req, res) => {
   const imagePath = req.file.path;
   const base64 = fs.readFileSync(imagePath, { encoding: "base64" });
 
@@ -63,6 +63,7 @@ app.post("/upload", upload.single("image"), async (req, res) => {
       result: textList,
       imageBase64: base64,
       originalImageWidth, // ✅ 传给模板
+      basePath,
     });
   } catch (err) {
     console.error("OCR error:", err);

@@ -35,7 +35,7 @@ const client = new OcrClient({
 });
 
 // 首页
-app.get(basePath ? basePath : basePath + "/", (req, res) => {
+app.get("/", (req, res) => {
   res.render("index", { result: null, basePath });
 });
 
@@ -59,7 +59,7 @@ app.post(basePath + "/upload", upload.single("image"), async (req, res) => {
     const data = await client.GeneralBasicOCR(params);
     const textList = data.TextDetections;
 
-    res.render("index", {
+    res.json({
       result: textList,
       imageBase64: base64,
       originalImageWidth, // ✅ 传给模板

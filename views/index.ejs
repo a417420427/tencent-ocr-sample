@@ -4,24 +4,33 @@
     <title>OCR 上传识别</title>
     <style>
       .page-container {
-        width: 100%;
         display: flex;
-        padding: 0 5%;
-        box-sizing: border-box;
-      }
-      .ocr-image {
-        width: 40%;
-        
-      }
-      .ocr-image > img {
         width: 100%;
+        padding: 20px 5%;
+        box-sizing: border-box;
+        gap: 20px;
+        min-height: 500px;
       }
-      .ocr-container {
-        margin: 0 auto;
-        position: relative;
-        width: 40%;
-        overflow: hidden;
+
+      .ocr-image {
+        width: 50%;
+        min-height: 500px;
+      }
+
+      .ocr-image img {
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+
+      .ocr-result {
+        width: 50%;
+        min-height: 500px;
         height: 1000px;
+        position: relative;
+        overflow: hidden;
+        background-color: #f4f4f4;
+        border: 1px solid #ddd;
       }
 
       .ocr-inner {
@@ -32,63 +41,93 @@
 
       .ocr-box {
         position: absolute;
-
-        border-radius: 4px;
-        padding: 2px;
         font-size: 12px;
-        color: black;
-        background-color: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.8);
+        padding: 2px 4px;
+        border-radius: 4px;
+        color: #000;
+        box-sizing: border-box;
       }
     </style>
   </head>
   <body>
     <h2>上传图片进行 OCR 识别</h2>
-    <form action="<%= basePath %>/upload" method="post" enctype="multipart/form-data">
-      <input type="file" name="image" accept="image/*" required />
-      <button type="submit">上传并识别</button>
-    </form>
+    <input type="file" id="imageInput" accept="image/*" />
+    <button id="uploadBtn">上传并识别</button>
 
-    <% if (result && result.length > 0) { %>
-    <h3>识别结果：</h3>
-    <div class="page-container">
-      <div class="ocr-image">
-        <img src="data:image/png;base64,<%= imageBase64 %>" />
-      </div>
-      <div class="ocr-container">
-        <div
-          class="ocr-inner"
-          id="ocr-inner"
-          style="width: <%= originalImageWidth %>px"
-        >
-          <% result.forEach(item => { const { X, Y, Width, Height } =
-          item.ItemPolygon; %>
-          <div
-            class="ocr-box"
-            style="
-              left: <%= X %>px;
-              top: <%= Y %>px;
-              width: <%= Width %>px;
-              height: <%= Height %>px;
-            "
-          >
-            <%= item.DetectedText %>
-          </div>
-          <% }); %>
-        </div>
+    <div class="page-container" id="resultContainer" style="opacity: 0;">
+      <div class="ocr-image" id="imageContainer"></div>
+      <div class="ocr-result" id="textContainer">
+        <div class="ocr-inner" id="ocrInner"></div>
       </div>
     </div>
 
     <script>
-      // 让容器根据屏幕宽度等比例缩放
-      const screenWidth = window.innerWidth/2;
-      const ors = <%= originalImageWidth %>;
-      const scale = screenWidth / ors;
+      const uploadBtn = document.getElementById("uploadBtn");
+      const imageInput = document.getElementById("imageInput");
+      const resultContainer = document.getElementById("resultContainer");
+      const imageContainer = document.getElementById("imageContainer");
+      const textContainer = document.getElementById("textContainer");
+      const ocrInner = document.getElementById("ocrInner");
+      
+      const basePath = "<%= basePath %>";
 
-      const ocrInner = document.getElementById('ocr-inner');
-      if (ocrInner) {
-        ocrInner.style.transform = `scale(${scale})`;
-      }
+      uploadBtn.addEventListener("click", async () => {
+        const file = imageInput.files[0];
+        if (!file) {
+          alert("请先选择一张图片");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+          const res = await fetch(basePath + "/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(errText || "上传失败");
+          }
+
+          const data = await res.json();
+
+          // 显示图片
+          imageContainer.innerHTML = `<img src="data:image/png;base64,${data.imageBase64}" alt="识别图片" />`;
+
+          // 获取缩放比例
+          const screenWidth = textContainer.clientWidth;
+          const scale = screenWidth / data.originalImageWidth;
+
+          // 设置 ocrInner 缩放
+          ocrInner.style.transform = `scale(${scale})`;
+          ocrInner.innerHTML = "";
+
+          // 添加每个文字框
+          data.result.forEach((item, index) => {
+            const box = document.createElement("div");
+            box.className = "ocr-box";
+            box.textContent = item.DetectedText;
+
+            const { X, Y, Width, Height } = item.ItemPolygon;
+
+            box.style.left = `${X}px`;
+            box.style.top = `${Y}px`;
+            box.style.width = `${Width}px`;
+            box.style.height = `${Height}px`;
+
+            ocrInner.appendChild(box);
+          });
+
+          resultContainer.style.opacity = "1";
+        } catch (err) {
+          alert("识别失败：" + err.message);
+          console.error(err);
+        }
+      });
     </script>
-    <% } %>
   </body>
 </html>

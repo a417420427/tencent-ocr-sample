@@ -5,10 +5,12 @@ const { imageSize } = require("image-size"); // ✅ 引入 image-size
 
 const TCloud = require("tencentcloud-sdk-nodejs-ocr");
 const dotenv = require("dotenv");
-const app = express();
-const port = 4000;
 
 const conf = dotenv.config().parsed;
+const app = express();
+const port = conf.SERVER_PORT || 4000;
+
+
 
 // ejs 模板引擎
 app.set("view engine", "ejs");

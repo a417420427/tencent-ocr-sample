@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OCR 上传识别</title>
+    <style>
+      .page-container {
+        width: 100%;
+        display: flex;
+        padding: 0 5%;
+        box-sizing: border-box;
+      }
+      .ocr-image {
+        width: 40%;
+        
+      }
+      .ocr-image > img {
+        width: 100%;
+      }
+      .ocr-container {
+        margin: 0 auto;
+        position: relative;
+        width: 40%;
+        overflow: hidden;
+        height: 1000px;
+      }
+
+      .ocr-inner {
+        position: relative;
+        transform-origin: top left;
+        height: 1000px;
+      }
+
+      .ocr-box {
+        position: absolute;
+
+        border-radius: 4px;
+        padding: 2px;
+        font-size: 12px;
+        color: black;
+        background-color: rgba(255, 255, 255, 0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <h2>上传图片进行 OCR 识别</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/*" required />
+      <button type="submit">上传并识别</button>
+    </form>
+
+    <% if (result && result.length > 0) { %>
+    <h3>识别结果：</h3>
+    <div class="page-container">
+      <div class="ocr-image">
+        <img src="data:image/png;base64,<%= imageBase64 %>" />
+      </div>
+      <div class="ocr-container">
+        <div
+          class="ocr-inner"
+          id="ocr-inner"
+          style="width: <%= originalImageWidth %>px"
+        >
+          <% result.forEach(item => { const { X, Y, Width, Height } =
+          item.ItemPolygon; %>
+          <div
+            class="ocr-box"
+            style="
+              left: <%= X %>px;
+              top: <%= Y %>px;
+              width: <%= Width %>px;
+              height: <%= Height %>px;
+            "
+          >
+            <%= item.DetectedText %>
+          </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 让容器根据屏幕宽度等比例缩放
+      const screenWidth = window.innerWidth/2;
+      const ors = <%= originalImageWidth %>;
+      const scale = screenWidth / ors;
+
+      const ocrInner = document.getElementById('ocr-inner');
+      if (ocrInner) {
+        ocrInner.style.transform = `scale(${scale})`;
+      }
+    </script>
+    <% } %>
+  </body>
+</html>

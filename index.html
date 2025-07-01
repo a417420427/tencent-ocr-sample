@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="file" id="imageInput" />
+    <button onclick="upload()">识别文字</button>
+    <pre id="result"></pre>
+
+    <script>
+      async function upload() {
+        const file = document.getElementById("imageInput").files[0];
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const res = await fetch("http://localhost:3000/ocr", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        document.getElementById("result").innerText = JSON.stringify(
+          data.TextDetections,
+          null,
+          2
+        );
+      }
+    </script>
+  </body>
+</html>

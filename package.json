@@ -1,0 +1,22 @@
+{
+  "name": "ocr-sample",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "image-size": "^2.0.2",
+    "multer": "^2.0.1",
+    "tencentcloud-sdk-nodejs": "^4.1.66",
+    "tencentcloud-sdk-nodejs-ocr": "^4.1.64"
+  }
+}

@@ -40,7 +40,7 @@ app.get("/", (req, res) => {
 });
 
 // 上传处理
-app.post(basePath + "/upload", upload.single("image"), async (req, res) => {
+app.post("/upload", upload.single("image"), async (req, res) => {
   const imagePath = req.file.path;
   const base64 = fs.readFileSync(imagePath, { encoding: "base64" });
 
